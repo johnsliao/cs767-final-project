@@ -34,7 +34,7 @@ def scrape():
             next_page = driver.find_element_by_xpath(
                 '//*[@id="mw-pages"]/a[2]') if page == 0 else driver.find_element_by_xpath('//*[@id="mw-pages"]/a[4]')
             next_page.click()
-            time.sleep(1)
+            time.sleep(3)
     except Exception as e:
         print(e)
     finally:
