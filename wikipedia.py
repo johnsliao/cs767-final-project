@@ -15,7 +15,7 @@ def fetch(q):
 
 
 def scrape():
-    with open('living_people.csv', 'w'):
+    with open('files/living_people.csv', 'w'):
         pass
 
     try:
@@ -26,7 +26,7 @@ def scrape():
             print('Parsing page {}'.format(page))
             groups = driver.find_elements_by_xpath("//div[@class='mw-category-group']")
 
-            with open('living_people.csv', 'a') as fs:
+            with open('files/living_people.csv', 'a') as fs:
                 for group in groups:
                     fs.write(group.text)
                     fs.write('\n')
