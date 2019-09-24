@@ -5,20 +5,36 @@ import time
 import random
 import json
 
+from pprint import pprint
 from selenium import webdriver
 
 
+def clean(text):
+    dirty_words = [
+        '\n', '== References =='
+    ]
+    for dirty_word in dirty_words:
+        text = text.replace(dirty_word, '')
+
+    return text
+
+
 def fetch(q):
+    print('Fetching {}...'.format(q))
     wiki_wiki = wikipediaapi.Wikipedia('en')
     page_py = wiki_wiki.page(q)
     categories = []
-    for category in page_py.categories:
-        categories.append(category)
 
-    if not categories or not page_py:
+    for category in page_py.categories:
+        categories.append(category.replace('Category:', ''))
+
+    summary = clean(page_py.summary)
+
+    if not categories or not summary:
         return None
 
-    return {'name': q, 'summary': page_py.summary, 'categories': categories}
+    result = {'name': q, 'summary': summary, 'categories': categories}
+    return result
 
 
 def generate_sample():
@@ -82,9 +98,11 @@ def scrape_pages():
 
     for name in names:
         try:
-            data.append(fetch(name))
-        except Exception:
-            pass
+            result = fetch(name.strip())
+            if result:
+                data.append(result)
+        except Exception as e:
+            print(e)
 
     js['data'] = data
     with open('files/training_set.json', 'w') as fs:
@@ -100,9 +118,11 @@ def scrape_pages():
 
     for name in names:
         try:
-            data.append(fetch(name))
-        except Exception:
-            pass
+            result = fetch(name.strip())
+            if result:
+                data.append(result)
+        except Exception as e:
+            print(e)
 
     js['data'] = data
     with open('files/test_set.json', 'w') as fs:
@@ -111,4 +131,5 @@ def scrape_pages():
 
 if __name__ == '__main__':
     # scrape_names()
-    generate_sample()
+    # generate_sample()
+    scrape_pages()
