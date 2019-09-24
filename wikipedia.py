@@ -31,9 +31,11 @@ def fetch(q):
     summary = clean(page_py.summary)
 
     if not categories or not summary:
+        print('  --> Failed')
         return None
 
     result = {'name': q, 'summary': summary, 'categories': categories}
+    print('  --> Success')
     return result
 
 
@@ -101,6 +103,7 @@ def scrape_pages():
             result = fetch(name.strip())
             if result:
                 data.append(result)
+            time.sleep(0.5)
         except Exception as e:
             print(e)
 
@@ -121,6 +124,7 @@ def scrape_pages():
             result = fetch(name.strip())
             if result:
                 data.append(result)
+            time.sleep(0.5)
         except Exception as e:
             print(e)
 
