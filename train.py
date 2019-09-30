@@ -1,10 +1,8 @@
 import nltk
 import json
 import string
-
-
-# with open('files/test_set.json', 'r') as fs:
-#     data = json.load(fs)
+from sklearn.feature_extraction.text import CountVectorizer
+from pprint import pprint
 
 def remove_punct(text):
     return "".join([char for char in text if char not in string.punctuation])
@@ -18,6 +16,16 @@ def remove_stopwords(tokenized_list):
 def stemming(tokenized_text):
     ps = nltk.PorterStemmer()
     return [ps.stem(word) for word in tokenized_text]
+
+
+def clean_text(text):
+    print(text)
+    text = remove_punct(text)
+    text = nltk.word_tokenize(text)
+    tokens = remove_stopwords(text)
+    text = stemming(tokens)
+    text = [' '.join(text)]
+    return text
 
 
 sample = {'name': 'Michael Hardt',
@@ -40,14 +48,16 @@ sample = {'name': 'Michael Hardt',
                          'Wikipedia articles with VIAF identifiers',
                          'Wikipedia articles with WorldCat-VIAF identifiers']}
 
+with open('files/test_set.json', 'r') as fs:
+    data = json.load(fs)
+
 # Pre-processing data
 # https://towardsdatascience.com/natural-language-processing-nlp-for-machine-learning-d44498845d5b
-text = remove_punct(sample['summary'])  # Remove punctuations
-tokens = nltk.word_tokenize(text)
-tokens = remove_stopwords(tokens)
-tokens = stemming(tokens)
+ngram_vect = CountVectorizer(ngram_range=(2, 2), analyzer=clean_text)
+x_counts = ngram_vect.fit_transform([sample['summary'], ])
+print(x_counts.shape)
+print(ngram_vect.get_feature_names())
 
-print(tokens)
 #
 # tagged = nltk.pos_tag(tokens)
 # print(tagged)
