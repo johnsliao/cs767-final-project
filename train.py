@@ -2,6 +2,7 @@ import nltk
 import json
 import pandas as pd
 import string
+import unicodedata
 import tensorflow as tf
 from sklearn.feature_extraction.text import CountVectorizer
 from pprint import pprint
@@ -10,6 +11,7 @@ from sklearn.preprocessing import MultiLabelBinarizer
 from tensorflow.keras import layers
 from tensorflow import feature_column
 from sklearn.linear_model import LogisticRegression
+
 
 def remove_punct(text):
     return "".join([char for char in text if char not in string.punctuation])
@@ -43,16 +45,29 @@ df['cleaned_summary'] = df.summary.apply(clean_text)
 print(df.head())
 
 # Vectorize sentences
-vectorizer = CountVectorizer(min_df=0, lowercase=False)
 sentences = df['cleaned_summary'].values
+
+vectorizer = CountVectorizer(min_df=0, lowercase=False)
 vectorizer.fit(sentences)
 
 # Vectorize labels
 labels = df['categories'].to_list()
-mlb = MultiLabelBinarizer()
-labels = mlb.fit_transform(labels)
+single_labels = []
 
-sentences_train, sentences_test, y_train, y_test = train_test_split(sentences, labels, test_size=0.25,
+# Only using first category...
+for label in labels:
+    single_labels.append(label[0])
+
+sentences_train, sentences_test, y_train, y_test = train_test_split(sentences, single_labels, test_size=0.25,
                                                                     random_state=1000)
 
+vectorizer = CountVectorizer()
+vectorizer.fit(sentences_train)
 
+X_train = vectorizer.transform(sentences_train)
+X_test = vectorizer.transform(sentences_test)
+
+classifier = LogisticRegression()
+classifier.fit(X_train, y_train)
+score = classifier.score(X_test, y_test)
+print(score)
