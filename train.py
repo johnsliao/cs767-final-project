@@ -1,8 +1,15 @@
 import nltk
 import json
+import pandas as pd
 import string
+import tensorflow as tf
 from sklearn.feature_extraction.text import CountVectorizer
 from pprint import pprint
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import MultiLabelBinarizer
+from tensorflow.keras import layers
+from tensorflow import feature_column
+
 
 def remove_punct(text):
     return "".join([char for char in text if char not in string.punctuation])
@@ -19,12 +26,12 @@ def stemming(tokenized_text):
 
 
 def clean_text(text):
-    print(text)
+    # print(text)
     text = remove_punct(text)
     text = nltk.word_tokenize(text)
     tokens = remove_stopwords(text)
     text = stemming(tokens)
-    text = [' '.join(text)]
+    text = ' '.join(text)
     return text
 
 
@@ -51,12 +58,59 @@ sample = {'name': 'Michael Hardt',
 with open('files/test_set.json', 'r') as fs:
     data = json.load(fs)
 
+df = pd.DataFrame(data['data'][0:100])
+df['cleaned_summary'] = df.summary.apply(clean_text)
+print(df.head())
+#
+# train, test = train_test_split(df, test_size=0.2)
+# train, val = train_test_split(train, test_size=0.2)
+# print(len(train), 'train examples')
+# print(len(val), 'validation examples')
+# print(len(test), 'test examples')
+
+# Create labels for categories
+# Create vocabulary for input text
+sentences = ['John likes ice cream', 'John hates chocolate.']
+vectorizer = CountVectorizer(min_df=0, lowercase=False)
+vectorizer.fit(sentences)
+print(vectorizer.vocabulary_)
+print(vectorizer.transform(sentences).toarray())
+
+sentences = df['cleaned_summary'].values
+labels = df['categories'].to_list()
+# print(labels)
+mlb = MultiLabelBinarizer()
+labels = mlb.fit_transform(labels)
+# print(labels)
+
+sentences_train, sentences_test, y_train, y_test = train_test_split(sentences, labels, test_size=0.25,
+                                                                    random_state=1000)
+
+model = tf.keras.Sequential([
+    layers.Dense(128, activation='relu'),
+    layers.Dense(128, activation='relu'),
+    layers.Dense(1, activation='sigmoid')
+])
+
+model.compile(optimizer='adam',
+              loss='binary_crossentropy',
+              metrics=['accuracy'])
+print(sentences_train)
+ds = tf.data.Dataset.from_tensor_slices((sentences_train, y_train))
+ds = ds.batch(32)
+
+val_ds = tf.data.Dataset.from_tensor_slices((sentences_test, y_test))
+val_ds = val_ds.batch(32)
+
+H = model.fit(ds, validation_data=val_ds, epochs=20)
+
+# print(sentences_train)
+
+# summary = df.pop('summary')
+# dataset = tf.data.Dataset.from_tensor_slices((df.values, summary.values))
+
 # Pre-processing data
 # https://towardsdatascience.com/natural-language-processing-nlp-for-machine-learning-d44498845d5b
-ngram_vect = CountVectorizer(ngram_range=(2, 2), analyzer=clean_text)
-x_counts = ngram_vect.fit_transform([sample['summary'], ])
-print(x_counts.shape)
-print(ngram_vect.get_feature_names())
 
 #
 # tagged = nltk.pos_tag(tokens)
