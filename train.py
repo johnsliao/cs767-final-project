@@ -53,7 +53,7 @@ if __name__ == '__main__':
     with open('files/test_set.json', 'r') as fs:
         data = json.load(fs)
 
-    df = pd.DataFrame(data['data'][0:1000])
+    df = pd.DataFrame(data['data'][0:100])
     df['cleaned_summary'] = df.summary.apply(clean_text)
     df['cleaned_labels'] = df.categories.apply(clean_labels)
     print(df.head())
@@ -87,12 +87,13 @@ if __name__ == '__main__':
     v_training_sentences = vectorizer.transform(training_sentences)
 
     print(v_training_sentences.shape)
+    print(v_train_category_vocab)
 
     input_dim = v_training_sentences.shape[1]
 
     model = Sequential()
     model.add(layers.Dense(10, input_dim=input_dim, activation='relu'))
-    model.add(layers.Dense(1, activation='sigmoid'))
+    model.add(layers.Dense(75, activation='softmax'))
 
     model.compile(optimizer='adam',
                   loss='binary_crossentropy',
@@ -102,7 +103,7 @@ if __name__ == '__main__':
 
     history = model.fit(v_training_sentences, v_train_category_vocab,
                         epochs=100,
-                        verbose=False, batch_size=10)
+                        verbose=False, batch_size=100)
 
-    loss, accuracy = model.evaluate(v_training_sentences, v_train_category_vocab, verbose=False)
+    loss, accuracy = model.evaluate(v_training_sentences, v_train_category_vocab, verbose=True)
     print("Training Accuracy: {:.4f}".format(accuracy))
