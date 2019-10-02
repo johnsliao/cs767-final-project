@@ -53,7 +53,7 @@ if __name__ == '__main__':
     with open('files/test_set.json', 'r') as fs:
         data = json.load(fs)
 
-    df = pd.DataFrame(data['data'][0:100])
+    df = pd.DataFrame(data['data'][0:1000])
     df['cleaned_summary'] = df.summary.apply(clean_text)
     df['cleaned_labels'] = df.categories.apply(clean_labels)
     print(df.head())
@@ -70,17 +70,18 @@ if __name__ == '__main__':
     # print(len(training_set_sentences))
     # print(training_set_sentences)
 
-    # Vectorize labels
-    pattern = "(?u)\\b[\\w-]+\\b"
-    cv = CountVectorizer(lowercase=False, ngram_range=(1, 10), token_pattern=pattern)
+    # Vectorize categories
+    cv = CountVectorizer(lowercase=False, ngram_range=(1, 10), token_pattern="(?u)\\b[\\w-]+\\b")
     cv.fit(training_categories)
     label_vocab = cv.vocabulary_
-    # print(label_vocab)
-    # print(len(label_vocab))
-    v_label_vocab = np.array([label_vocab[_] for _ in training_categories])
-    print(len(v_label_vocab))
-    print(v_label_vocab)
+    v_train_category_vocab = np.array([label_vocab[_] for _ in training_categories])
 
+    cv = CountVectorizer(lowercase=False, ngram_range=(1, 10), token_pattern="(?u)\\b[\\w-]+\\b")
+    cv.fit(test_categories)
+    label_vocab = cv.vocabulary_
+    v_test_category_vocab = np.array([label_vocab[_] for _ in test_categories])
+
+    # Vectorize sentences
     vectorizer = CountVectorizer(min_df=0, lowercase=False)
     vectorizer.fit(sentences)
     v_training_sentences = vectorizer.transform(training_sentences)
@@ -99,23 +100,9 @@ if __name__ == '__main__':
 
     print(model.summary())
 
-    history = model.fit(v_training_sentences, v_label_vocab,
+    history = model.fit(v_training_sentences, v_train_category_vocab,
                         epochs=100,
                         verbose=False, batch_size=10)
 
-    # model.fit(training_sentences, training_categories, epochs=2)
-
-    #
-    # vectorizer = CountVectorizer(ngram_range=(2, 2))
-    # vectorizer.fit(sentences_train)
-    #
-    # # Create BOW model vocabulary for training and testing set
-    # X_train = vectorizer.transform(sentences_train)
-    # X_test = vectorizer.transform(sentences_test)
-    #
-    # print(X_train)
-    #
-    # classifier = LogisticRegression()
-    # classifier.fit(X_train, y_train)
-    # score = classifier.score(X_test, y_test)
-    # print(score)
+    loss, accuracy = model.evaluate(v_training_sentences, v_train_category_vocab, verbose=False)
+    print("Training Accuracy: {:.4f}".format(accuracy))
