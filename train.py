@@ -29,7 +29,7 @@ def remove_stopwords(tokenized_list):
 
 def stemming(tokenized_text):
     ps = nltk.PorterStemmer()
-    return [ps.stem(word) for word in tokenized_text]
+    return [ps.stemword) for word in tokenized_text]
 
 
 def clean_text(text):
@@ -93,7 +93,7 @@ if __name__ == '__main__':
 
     model = Sequential()
     model.add(layers.Dense(10, input_dim=input_dim, activation='relu'))
-    model.add(layers.Dense(75, activation='softmax'))
+    model.add(layers.Dense(1, activation='softmax'))
 
     model.compile(optimizer='adam',
                   loss='binary_crossentropy',
