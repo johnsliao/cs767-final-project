@@ -45,21 +45,27 @@ if __name__ == '__main__':
     with open('files/test_set.json', 'r') as fs:
         data = json.load(fs)
 
-    df = pd.DataFrame(data['data'][0:2500])
+    df = pd.DataFrame(data['data'][0:100])
     df['cleaned_summary'] = df.summary.apply(clean_text)
-    df['cleaned_labels'] = df.categories.apply(clean_labels)
     print(df.head())
 
     sentences = df['cleaned_summary'].values
-    labels = df['cleaned_labels'].to_list()
+    labels = df['categories'].to_list()
 
     # class_names = [label[0] for label in labels]  # Grab first category
 
     # Grab category that exists already
     class_names = []
-
+    banned_categories = ['Articles to be', 'lacking sources', 'births', 'all stub articles', 'all articles',
+                         'Articles needing', 'articles with', 'Articles containing', 'All Wikipedia', 'Living people',
+                         'Articles using', 'Commons category link']
     for label in labels:
         for category in label:
+            if any(_.lower() in category.lower() for _ in banned_categories):
+                continue
+
+            print(category)
+
             if category in class_names:
                 class_names.append(category)  # Append if already exists in list (reuse categories)
             else:
