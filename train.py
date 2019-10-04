@@ -46,7 +46,7 @@ if __name__ == '__main__':
     with open('files/test_set.json', 'r') as fs:
         data = json.load(fs)
 
-    df = pd.DataFrame(data['data'][0:500])
+    df = pd.DataFrame(data['data'][0:1000])
     df['cleaned_summary'] = df.summary.apply(clean_text)
     df['cleaned_labels'] = df.categories.apply(clean_labels)
     print(df.head())
@@ -83,6 +83,7 @@ if __name__ == '__main__':
     print('Old category vocabulary has length {}'.format(len(class_names)))
     print('New category vocabulary has length {}'.format(len(list(set(class_names)))))
     print('The number of duplicates is {}'.format((len(class_names) - len(list(set(class_names))))))
+    print('% duplicates is {}%'.format(100 * (len(class_names) - len(list(set(class_names)))) / len(class_names)))
 
     # Create lookup for them
     categories_lookup = {}
@@ -91,7 +92,7 @@ if __name__ == '__main__':
         categories_lookup[training_category] = i
 
     v_categories = np.array([categories_lookup[_] for _ in class_names])
-
+    exit(1)
     # Vectorize Sentences
     vectorizer = CountVectorizer(min_df=0, lowercase=False)
     vectorizer.fit(sentences)
