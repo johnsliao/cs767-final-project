@@ -45,7 +45,7 @@ if __name__ == '__main__':
     with open('files/test_set.json', 'r') as fs:
         data = json.load(fs)
 
-    df = pd.DataFrame(data['data'][0:100])
+    df = pd.DataFrame(data['data'][0:10])
     df['cleaned_summary'] = df.summary.apply(clean_text)
     df['cleaned_labels'] = df.categories.apply(clean_labels)
     print(df.head())
@@ -53,49 +53,50 @@ if __name__ == '__main__':
     sentences = df['cleaned_summary'].values
     labels = df['cleaned_labels'].to_list()
 
-    single_labels = [label[0] for label in labels]  # Grab first category
+    class_names = [label[0] for label in labels]  # Grab first category
 
     # Allocate training/test data
     training_sentences, test_sentences, training_categories, test_categories = train_test_split(
-        sentences, single_labels, test_size=0.25, random_state=1000)
+        sentences, class_names, test_size=0.25, random_state=1000)
 
-    # print(len(training_set_sentences))
-    # print(training_set_sentences)
+    print('INPUT DATA')
+    print(training_sentences)
+    print(training_categories)
+
+    print(len(training_sentences))
+    print(len(training_categories))
+    print()
 
     # Vectorize categories
-    cv = CountVectorizer(lowercase=False, ngram_range=(1, 10), token_pattern="(?u)\\b[\\w-]+\\b")
-    cv.fit(training_categories)
-    label_vocab = cv.vocabulary_
-    v_train_category_vocab = np.array([label_vocab[_] for _ in training_categories])
-
-    cv = CountVectorizer(lowercase=False, ngram_range=(1, 10), token_pattern="(?u)\\b[\\w-]+\\b")
-    cv.fit(test_categories)
-    label_vocab = cv.vocabulary_
-    v_test_category_vocab = np.array([label_vocab[_] for _ in test_categories])
+    v_training_categories = np.array([x for x, y in enumerate(training_categories)])  # Use index of class name
 
     # Vectorize sentences
     vectorizer = CountVectorizer(min_df=0, lowercase=False)
     vectorizer.fit(sentences)
     v_training_sentences = vectorizer.transform(training_sentences)
 
+    print('TRAINING DATA')
     print(v_training_sentences.shape)
-    print(v_train_category_vocab)
+    print(v_training_categories)
+    print()
 
     input_dim = v_training_sentences.shape[1]
 
+    print('INPUT DIM IS {}'.format(input_dim))
+
     model = Sequential()
-    model.add(layers.Dense(10, input_dim=input_dim, activation='relu'))
-    model.add(layers.Dense(1, activation='softmax'))
+    model.add(layers.Dense(128, input_dim=input_dim, activation='relu'))
+    model.add(layers.Dense(7, activation='softmax'))
 
     model.compile(optimizer='adam',
-                  loss='binary_crossentropy',
+                  loss='sparse_categorical_crossentropy',
                   metrics=['accuracy'])
 
     print(model.summary())
 
-    history = model.fit(v_training_sentences, v_train_category_vocab,
+    history = model.fit(v_training_sentences, v_training_categories,
                         epochs=100,
                         verbose=False, batch_size=100)
 
-    loss, accuracy = model.evaluate(v_training_sentences, v_train_category_vocab, verbose=True)
+    loss, accuracy = model.evaluate(v_training_sentences, v_training_categories, verbose=True)
     print("Training Accuracy: {:.4f}".format(accuracy))
