@@ -1,21 +1,13 @@
 import nltk
 import json
 import pandas as pd
+import numpy as np
 import string
-from tensorflow import keras
-import unicodedata
-import tensorflow as tf
+
 from sklearn.feature_extraction.text import CountVectorizer
-from pprint import pprint
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import MultiLabelBinarizer
-from tensorflow.keras import layers
-from tensorflow import feature_column
-from sklearn.linear_model import LogisticRegression
-from sklearn.feature_extraction.text import TfidfVectorizer as tf
 from keras.models import Sequential
 from keras import layers
-import numpy as np
 
 
 def remove_punct(text):
@@ -29,7 +21,7 @@ def remove_stopwords(tokenized_list):
 
 def stemming(tokenized_text):
     ps = nltk.PorterStemmer()
-    return [ps.stemword) for word in tokenized_text]
+    return [ps.stem(word) for word in tokenized_text]
 
 
 def clean_text(text):
