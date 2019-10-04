@@ -62,9 +62,14 @@ if __name__ == '__main__':
                          'Articles needing', 'articles with', 'Articles containing', 'All Wikipedia', 'Living people',
                          'Articles using', 'Commons category link', 'stub articles', 'All orphaned articles',
                          ]
+
     for category_list in categories_lists:
         cleaned_category_list = [x for x in category_list if
                                  not any(_.lower() in x.lower() for _ in banned_categories)]
+
+        # Re-use dirty category list in none remain after cleaning
+        if len(cleaned_category_list) == 0:
+            cleaned_category_list = category_list
 
         for category in cleaned_category_list:
             if category in class_names:
@@ -114,7 +119,7 @@ if __name__ == '__main__':
 
     model = Sequential()
     model.add(layers.Dense(128, input_dim=input_dim, activation='relu'))
-    model.add(layers.Dense(len(training_categories), activation='softmax'))
+    model.add(layers.Dense(len(v_categories), activation='softmax'))
 
     model.compile(optimizer='adam',
                   loss='sparse_categorical_crossentropy',
