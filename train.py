@@ -3,6 +3,7 @@ import json
 import pandas as pd
 import numpy as np
 import string
+import random
 
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split
@@ -45,12 +46,13 @@ if __name__ == '__main__':
     with open('files/test_set.json', 'r') as fs:
         data = json.load(fs)
 
-    df = pd.DataFrame(data['data'][0:100])
+    df = pd.DataFrame(data['data'][0:500])
     df['cleaned_summary'] = df.summary.apply(clean_text)
+    df['cleaned_labels'] = df.categories.apply(clean_labels)
     print(df.head())
 
     sentences = df['cleaned_summary'].values
-    labels = df['categories'].to_list()
+    categories_lists = df['categories'].to_list()
 
     # class_names = [label[0] for label in labels]  # Grab first category
 
@@ -58,18 +60,17 @@ if __name__ == '__main__':
     class_names = []
     banned_categories = ['Articles to be', 'lacking sources', 'births', 'all stub articles', 'all articles',
                          'Articles needing', 'articles with', 'Articles containing', 'All Wikipedia', 'Living people',
-                         'Articles using', 'Commons category link']
-    for label in labels:
-        for category in label:
-            if any(_.lower() in category.lower() for _ in banned_categories):
-                continue
+                         'Articles using', 'Commons category link', 'stub articles', 'All orphaned articles',
+                         ]
+    for category_list in categories_lists:
+        cleaned_category_list = [x for x in category_list if
+                                 not any(_.lower() in x.lower() for _ in banned_categories)]
 
-            print(category)
-
+        for category in cleaned_category_list:
             if category in class_names:
                 class_names.append(category)  # Append if already exists in list (reuse categories)
             else:
-                class_names.append(label[0])  # Append first item
+                class_names.append(cleaned_category_list[0])  # Append first item
             break
 
     # Vectorize categories
