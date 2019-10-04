@@ -66,10 +66,25 @@ if __name__ == '__main__':
                 class_names.append(label[0])  # Append first item
             break
 
+    # Vectorize categories
+    print('All categories in sequential order are {}'.format(class_names))
+    print('Old category vocabulary has length {}'.format(len(class_names)))
+    print('New category vocabulary has length {}'.format(len(list(set(class_names)))))
+    print('The number of duplicates is {}'.format((len(class_names) - len(list(set(class_names))))))
+
+    # Create lookup for them
+    categories_lookup = {}
+
+    for i, training_category in enumerate(list(set(class_names))):
+        categories_lookup[training_category] = i
+
+    v_categories = np.array([categories_lookup[_] for _ in class_names])
+
     # Allocate training/test data
     training_sentences, test_sentences, training_categories, test_categories = train_test_split(
-        sentences, class_names, test_size=0.25, random_state=1000)
+        sentences, v_categories, test_size=0.25, random_state=1000)
 
+    print()
     print('INPUT DATA')
     print(training_sentences[0])
     print(training_categories)
@@ -78,20 +93,6 @@ if __name__ == '__main__':
     print(len(training_categories))
     print()
 
-    # Vectorize categories
-    print('All training categories in sequential order are {}'.format(training_categories))
-    print('Old training vocabulary has length {}'.format(len(training_categories)))
-    print('New training vocabulary has length {}'.format(len(list(set(training_categories)))))
-    print('The number of duplicates is {}'.format((len(training_categories) - len(list(set(training_categories))))))
-
-    # Create lookup for them
-    training_categories_lookup = {}
-
-    for i, training_category in enumerate(list(set(training_categories))):
-        training_categories_lookup[training_category] = i
-
-    v_training_categories = np.array([training_categories_lookup[_] for _ in training_categories])
-
     # Vectorize sentences
     vectorizer = CountVectorizer(min_df=0, lowercase=False)
     vectorizer.fit(sentences)
@@ -99,8 +100,8 @@ if __name__ == '__main__':
 
     print('TRAINING DATA')
     print(v_training_sentences.shape)
-    print('Training Category Lookup: {}'.format(training_categories_lookup))
-    print(v_training_categories, len(v_training_categories))
+    print('Category Lookup: {}'.format(v_categories))
+    print(training_categories, len(training_categories))
     print()
 
     input_dim = v_training_sentences.shape[1]
@@ -109,7 +110,7 @@ if __name__ == '__main__':
 
     model = Sequential()
     model.add(layers.Dense(128, input_dim=input_dim, activation='relu'))
-    model.add(layers.Dense(len(v_training_categories), activation='softmax'))
+    model.add(layers.Dense(len(training_categories), activation='softmax'))
 
     model.compile(optimizer='adam',
                   loss='sparse_categorical_crossentropy',
@@ -117,9 +118,9 @@ if __name__ == '__main__':
 
     print(model.summary())
 
-    history = model.fit(v_training_sentences, v_training_categories,
+    history = model.fit(v_training_sentences, training_categories,
                         epochs=100,
                         verbose=False, batch_size=100)
 
-    loss, accuracy = model.evaluate(v_training_sentences, v_training_categories, verbose=True)
+    loss, accuracy = model.evaluate(v_training_sentences, training_categories, verbose=True)
     print("Training Accuracy: {:.4f}".format(accuracy))
