@@ -45,7 +45,7 @@ if __name__ == '__main__':
     with open('files/test_set.json', 'r') as fs:
         data = json.load(fs)
 
-    df = pd.DataFrame(data['data'][0:100])
+    df = pd.DataFrame(data['data'][0:2500])
     df['cleaned_summary'] = df.summary.apply(clean_text)
     df['cleaned_labels'] = df.categories.apply(clean_labels)
     print(df.head())
@@ -80,31 +80,28 @@ if __name__ == '__main__':
 
     v_categories = np.array([categories_lookup[_] for _ in class_names])
 
+    # Vectorize Sentences
+    vectorizer = CountVectorizer(min_df=0, lowercase=False)
+    vectorizer.fit(sentences)
+    v_sentences = vectorizer.transform(sentences)
+
     # Allocate training/test data
     training_sentences, test_sentences, training_categories, test_categories = train_test_split(
-        sentences, v_categories, test_size=0.25, random_state=1000)
+        v_sentences, v_categories, test_size=0.25, random_state=1000)
 
     print()
     print('INPUT DATA')
     print(training_sentences[0])
     print(training_categories)
-
-    print(len(training_sentences))
-    print(len(training_categories))
     print()
 
-    # Vectorize sentences
-    vectorizer = CountVectorizer(min_df=0, lowercase=False)
-    vectorizer.fit(sentences)
-    v_training_sentences = vectorizer.transform(training_sentences)
-
     print('TRAINING DATA')
-    print(v_training_sentences.shape)
+    print(training_sentences.shape)
     print('Category Lookup: {}'.format(v_categories))
     print(training_categories, len(training_categories))
     print()
 
-    input_dim = v_training_sentences.shape[1]
+    input_dim = training_sentences.shape[1]
 
     print('INPUT DIM IS {}'.format(input_dim))
 
@@ -118,9 +115,12 @@ if __name__ == '__main__':
 
     print(model.summary())
 
-    history = model.fit(v_training_sentences, training_categories,
+    history = model.fit(training_sentences, training_categories,
                         epochs=100,
                         verbose=False, batch_size=100)
 
-    loss, accuracy = model.evaluate(v_training_sentences, training_categories, verbose=True)
+    loss, accuracy = model.evaluate(training_sentences, training_categories, verbose=True)
     print("Training Accuracy: {:.4f}".format(accuracy))
+
+    test_loss, test_acc = model.evaluate(test_sentences, test_categories, verbose=2)
+    print('\nTest accuracy:', test_acc)
