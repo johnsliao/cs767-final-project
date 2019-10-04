@@ -46,7 +46,7 @@ if __name__ == '__main__':
     with open('files/test_set.json', 'r') as fs:
         data = json.load(fs)
 
-    df = pd.DataFrame(data['data'][0:1000])
+    df = pd.DataFrame(data['data'][0:100])
     df['cleaned_summary'] = df.summary.apply(clean_text)
     df['cleaned_labels'] = df.categories.apply(clean_labels)
     print(df.head())
@@ -137,3 +137,13 @@ if __name__ == '__main__':
 
     test_loss, test_acc = model.evaluate(test_sentences, test_categories, verbose=2)
     print('\nTest accuracy:', test_acc)
+
+    # Testing with my own inputs
+    vectorizer = CountVectorizer(min_df=0, lowercase=False)
+    vectorizer.fit(sentences)
+    own_test = vectorizer.transform(['Waldemar Adamczyk (born 3 July 1969) is a retired Polish football forward.'])
+    predictions = model.predict(own_test)
+    value = np.argmax(predictions[0])
+
+    print(value)
+    print([k for k, v in categories_lookup.items() if v == value])
