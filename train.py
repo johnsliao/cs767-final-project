@@ -92,7 +92,7 @@ if __name__ == '__main__':
         categories_lookup[training_category] = i
 
     v_categories = np.array([categories_lookup[_] for _ in class_names])
-    exit(1)
+
     # Vectorize Sentences
     vectorizer = CountVectorizer(min_df=0, lowercase=False)
     vectorizer.fit(sentences)
