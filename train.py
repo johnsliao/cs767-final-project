@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import string
 import random
+from keras.models import load_model
 
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split
@@ -43,7 +44,7 @@ def clean_labels(labels):
 
 
 if __name__ == '__main__':
-    with open('files/test_set.json', 'r') as fs:
+    with open('files/training_set.json', 'r') as fs:
         data = json.load(fs)
 
     df = pd.DataFrame(data['data'][0:100])
@@ -102,6 +103,8 @@ if __name__ == '__main__':
     training_sentences, test_sentences, training_categories, test_categories = train_test_split(
         v_sentences, v_categories, test_size=0.25, random_state=1000)
 
+    # -- Build Model Start --
+
     print()
     print('INPUT DATA')
     print(training_sentences[0])
@@ -132,18 +135,26 @@ if __name__ == '__main__':
                         epochs=100,
                         verbose=False, batch_size=100)
 
-    loss, accuracy = model.evaluate(training_sentences, training_categories, verbose=True)
-    print("Training Accuracy: {:.4f}".format(accuracy))
+    # Save model
+    model.save('trained_model.h5')  # creates a HDF5 file 'my_model.h5'
 
-    test_loss, test_acc = model.evaluate(test_sentences, test_categories, verbose=2)
-    print('\nTest accuracy:', test_acc)
+    # -- Build Model End --
 
-    # Testing with my own inputs
-    vectorizer = CountVectorizer(min_df=0, lowercase=False)
-    vectorizer.fit(sentences)
-    own_test = vectorizer.transform(['Waldemar Adamczyk (born 3 July 1969) is a retired Polish football forward.'])
-    predictions = model.predict(own_test)
-    value = np.argmax(predictions[0])
+    # -- Test Model Start --
 
-    print(value)
-    print([k for k, v in categories_lookup.items() if v == value])
+    # model = load_model('trained_model.h5')
+    #
+    # loss, accuracy = model.evaluate(training_sentences, training_categories, verbose=True)
+    # print("Training Accuracy: {:.4f}".format(accuracy))
+    #
+    # test_loss, test_acc = model.evaluate(test_sentences, test_categories, verbose=2)
+    # print('\nTest accuracy:', test_acc)
+    #
+    # predictions = model.predict(test_sentences)
+    # print(sentences[75])
+    # value = np.argmax(predictions[0])
+    #
+    # print(value)
+    # print([k for k, v in categories_lookup.items() if v == value])
+
+    # -- Test Model End --
