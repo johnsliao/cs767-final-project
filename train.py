@@ -3,8 +3,8 @@ import json
 import pandas as pd
 import numpy as np
 import string
-import random
-from keras.models import load_model
+from keras.utils import plot_model
+import matplotlib.pyplot as plt
 
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split
@@ -47,7 +47,7 @@ if __name__ == '__main__':
     with open('files/training_set.json', 'r') as fs:
         data = json.load(fs)
 
-    df = pd.DataFrame(data['data'][0:100])
+    df = pd.DataFrame(data['data'])
     df['cleaned_summary'] = df.summary.apply(clean_text)
     df['cleaned_labels'] = df.categories.apply(clean_labels)
     print(df.head())
@@ -55,29 +55,7 @@ if __name__ == '__main__':
     sentences = df['cleaned_summary'].values
     categories_lists = df['categories'].to_list()
 
-    # class_names = [label[0] for label in labels]  # Grab first category
-
-    # Grab category that exists already
-    class_names = []
-    banned_categories = ['Articles to be', 'lacking sources', 'births', 'all stub articles', 'all articles',
-                         'Articles needing', 'articles with', 'Articles containing', 'All Wikipedia', 'Living people',
-                         'Articles using', 'Commons category link', 'stub articles', 'All orphaned articles',
-                         ]
-
-    for category_list in categories_lists:
-        cleaned_category_list = [x for x in category_list if
-                                 not any(_.lower() in x.lower() for _ in banned_categories)]
-
-        # Re-use dirty category list in none remain after cleaning
-        if len(cleaned_category_list) == 0:
-            cleaned_category_list = category_list
-
-        for category in cleaned_category_list:
-            if category in class_names:
-                class_names.append(category)  # Append if already exists in list (reuse categories)
-            else:
-                class_names.append(cleaned_category_list[0])  # Append first item
-            break
+    class_names = [label[0] for label in categories_lists]  # Grab first category
 
     # Vectorize categories
     print('All categories in sequential order are {}'.format(class_names))
@@ -103,8 +81,6 @@ if __name__ == '__main__':
     training_sentences, test_sentences, training_categories, test_categories = train_test_split(
         v_sentences, v_categories, test_size=0.25, random_state=1000)
 
-    # -- Build Model Start --
-
     print()
     print('INPUT DATA')
     print(training_sentences[0])
@@ -119,7 +95,7 @@ if __name__ == '__main__':
 
     input_dim = training_sentences.shape[1]
 
-    print('INPUT DIM IS {}'.format(input_dim))
+    print('Input dimension is {}'.format(input_dim))
 
     model = Sequential()
     model.add(layers.Dense(128, input_dim=input_dim, activation='relu'))
@@ -131,30 +107,25 @@ if __name__ == '__main__':
 
     print(model.summary())
 
-    history = model.fit(training_sentences, training_categories,
-                        epochs=100,
-                        verbose=False, batch_size=100)
+    history = model.fit(training_sentences, training_categories, epochs=10, verbose=1)
+    print(history.history)
+    plt.plot(history.history['accuracy'])
+    plt.title('Model accuracy')
+    plt.ylabel('Accuracy')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Test'], loc='upper left')
+    plt.show()
 
-    # Save model
-    model.save('trained_model.h5')  # creates a HDF5 file 'my_model.h5'
+    # Plot training & validation loss values
+    plt.plot(history.history['loss'])
+    plt.title('Model loss')
+    plt.ylabel('Loss')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Test'], loc='upper left')
+    plt.show()
 
-    # -- Build Model End --
+    loss, accuracy = model.evaluate(training_sentences, training_categories, verbose=True)
+    print("Training Accuracy: {:.4f}".format(accuracy))
 
-    # -- Test Model Start --
-
-    # model = load_model('trained_model.h5')
-    #
-    # loss, accuracy = model.evaluate(training_sentences, training_categories, verbose=True)
-    # print("Training Accuracy: {:.4f}".format(accuracy))
-    #
-    # test_loss, test_acc = model.evaluate(test_sentences, test_categories, verbose=2)
-    # print('\nTest accuracy:', test_acc)
-    #
-    # predictions = model.predict(test_sentences)
-    # print(sentences[75])
-    # value = np.argmax(predictions[0])
-    #
-    # print(value)
-    # print([k for k, v in categories_lookup.items() if v == value])
-
-    # -- Test Model End --
+    test_loss, test_acc = model.evaluate(test_sentences, test_categories, verbose=2)
+    print('\nTest accuracy:', test_acc)
