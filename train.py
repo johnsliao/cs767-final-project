@@ -47,7 +47,7 @@ if __name__ == '__main__':
     with open('files/training_set.json', 'r') as fs:
         data = json.load(fs)
 
-    df = pd.DataFrame(data['data'])
+    df = pd.DataFrame(data['data'][0:10000])
     df['cleaned_summary'] = df.summary.apply(clean_text)
     df['cleaned_labels'] = df.categories.apply(clean_labels)
     print(df.head())
