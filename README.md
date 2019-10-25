@@ -4,6 +4,8 @@ CS 767 Final Project
 John Liao  
 Fall Semester - OY1 2019
 
+The proposal of the project is to develop a machine learning application that provides category recommendations based on input text from Wikipedia webpages. 
+
 The overall design is to parse the collected summary Wikipedia page summary text, clean and vectorize using bag-of-words vectorization approach, and then feed it into a neural network. 
 
 The following is the overall flow of the application:
