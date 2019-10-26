@@ -1,6 +1,6 @@
 # Wikipedia Category Recommender using Neural Network
 Boston University Metropolitan College  
-CS 767 Final Project 
+CS 767 Final Project  
 John Liao  
 Fall Semester - OY1 2019
 
