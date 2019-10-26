@@ -18,7 +18,7 @@ During this phase, the data will be scraped from Wikipedia using their API to co
 Out of the large population, samples are randomly drawn for the training and test data. There will be approximately 100,000 total data points (70/30 ratio of training to test data). The next step is to scrape the summary text and corresponding category information – this is done via the scrape_pages() method. This is by far the most time-consuming portion of the data gathering. The requests are throttled to ensure no rate-limiting/IP block. The output is stored as a JSON file. There was minor cleaning of the data before piping it into the JSON files (removing new lines \n and some other noticeable structured text).
 
 ## Data Cleaning
-Sentences
+### Sentences
 It has been quickly understood that neural networks are not able to readily ingest and understand words. The input data has therefore been cleaned for better understanding by the neural network and in a language that it can speak (vectorization). 
 For better understanding, the input sentence text is passed through a function clean_text(), which:
 
@@ -48,7 +48,7 @@ Apply bag of words vectorization:
 
 This provides a better starting point for the neural network to connect meaningful words rather than get bogged down in phases like “it”, “that”, etc. The way stemming is applied is very brute force – it simply truncates the end of words. It would be better to actually analyze the context of the word and the meaning and stem it accordingly. A bag of words vectorization proved to have better results and was used instead of n-gram vectorization. 
 
-## Categories
+### Categories
 There are a number of categories that apply to each sentence input text. For example, Steven Hawking may have: (1) People born in 1942, (2) Physicist, (3) Cosmologist. For the purpose of this exercise, if the categories contain the following banned keywords, then it is rejected from being considered. Only a single category is selected for each input body of text. 
 
 If the following text exists in the category, then it is automatically removed:
