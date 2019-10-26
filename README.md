@@ -31,19 +31,19 @@ For example, the following cleaning is applied to the following text from input 
 
 ```“Stephen William Hawking was an English theoretical physicist, cosmologist, and author who was director of research at the Centre for Theoretical Cosmology at the University of Cambridge at the time of his death.”```
 
-Removing punctuation:  
+1. Removing punctuation:  
 ```Stephen William Hawking was an English theoretical physicist cosmologist and author who was director of research at the Centre for Theoretical Cosmology at the University of Cambridge at the time of his death```
 
-Tokenization:  
+2. Tokenization:  
 ```['Stephen', 'William', 'Hawking', 'was', 'an', 'English', 'theoretical', 'physicist', 'cosmologist', 'and', 'author', 'who', 'was', 'director', 'of', 'research', 'at', 'the', 'Centre', 'for', 'Theoretical', 'Cosmology', 'at', 'the', 'University', 'of', 'Cambridge', 'at', 'the', 'time', 'of', 'his', 'death']```
 
-Removing stop words:  
+3. Removing stop words:  
 ```['Stephen', 'William', 'Hawking', 'English', 'theoretical', 'physicist', 'cosmologist', 'author', 'director', 'research', 'Centre', 'Theoretical', 'Cosmology', 'University', 'Cambridge', 'time', 'death']```
 
-Apply stemming:  
+4. Apply stemming:  
 ```['stephen', 'william', 'hawk', 'english', 'theoret', 'physicist', 'cosmologist', 'author',` 'director', 'research', 'centr', 'theoret', 'cosmolog', 'univers', 'cambridg', 'time', 'death']```
 
-Apply bag of words vectorization:  
+5. Apply bag of words vectorization:  
 ```{'stephen': 11, 'william': 15, 'hawk': 8, 'english': 7, 'theoret': 12, 'physicist': 9, 'cosmologist': 4, 'author': 0, 'director': 6, 'research': 10, 'centr': 2, 'cosmolog': 3, 'univers': 14, 'cambridg': 1, 'time': 13, 'death': 5}```
 
 This provides a better starting point for the neural network to connect meaningful words rather than get bogged down in phases like “it”, “that”, etc. The way stemming is applied is very brute force – it simply truncates the end of words. It would be better to actually analyze the context of the word and the meaning and stem it accordingly. A bag of words vectorization proved to have better results and was used instead of n-gram vectorization. 
